@@ -118,15 +118,51 @@ const App: React.FC = () => {
         try {
           const formData = new FormData();
           formData.append('name', name);
+
+          // Show progress
+          pushHistory({ type: 'output', content: <div className="history-output text-dim font-inter italic">Connecting to secure vault...</div> });
+
           const res = await axios.post(`${API_BASE}/generate-key`, formData, { responseType: 'blob' });
-          const url = window.URL.createObjectURL(res.data);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `${name}.key`;
-          a.click();
-          output = <div className="history-output font-inter"><span className="text-green font-bold">✓</span> <span className="text-dim">Key <span className="text-main font-mono">"{name}.key"</span> generated and downloaded.</span></div>;
+
+          // Convert to data URL for maximum mobile support
+          const reader = new FileReader();
+          const dataUrl = await new Promise<string>((resolve) => {
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.readAsDataURL(res.data);
+          });
+
+          // Also get the text version for copying if download fails
+          const keyText = await res.data.text();
+
+          output = (
+            <div className="history-output font-inter mt-1 mb-2">
+              <p className="text-green font-bold mb-1">✓ KEY GENERATION SUCCESSFUL</p>
+              <p className="text-dim mb-3 text-[13px]">Encryption key <span className="text-main font-mono">"{name}.key"</span> is ready.</p>
+
+              <div className="flex gap-2 flex-wrap">
+                <a
+                  href={dataUrl}
+                  download={`${name}.key`}
+                  className="text-cyan text-[11px] font-bold border border-cyan px-3 py-2 rounded hover:bg-cyan hover:text-[#0b1114] cursor-pointer transition-colors uppercase inline-block"
+                >
+                  Download .Key File
+                </a>
+
+                <button
+                  onClick={() => navigator.clipboard.writeText(keyText)}
+                  className="text-dim text-[11px] font-bold border border-white/20 px-3 py-2 rounded hover:bg-white/10 cursor-pointer transition-colors uppercase"
+                >
+                  Copy Key Text
+                </button>
+              </div>
+
+              <p className="text-dim text-[11px] mt-4 italic leading-relaxed">
+                <span className="text-main font-bold">MOBILE TIP:</span> If "Download" doesn't work, click "Copy Key Text", then create a new note/file on your phone and paste it there.
+              </p>
+            </div>
+          );
         } catch (err: any) {
-          output = <div className="history-output font-inter" style={{ color: '#ff5f56' }}>✖ Error generating key. Check API status.</div>;
+          output = <div className="history-output font-inter" style={{ color: '#ff5f56' }}>✖ Error generating key. Check if the API is online.</div>;
         }
         break;
 
