@@ -113,6 +113,17 @@ const App: React.FC = () => {
       case 'clear':
         setHistory([]);
         return;
+      case 'status':
+        output = (
+          <div className="history-output font-inter text-dim">
+            <p><span className="text-cyan font-bold">MODE</span>: {API_BASE.includes('localhost') ? 'LOCAL-DEV' : 'PRODUCTION-ONLINE'}</p>
+            <p><span className="text-cyan font-bold">API_URL</span>: <span className="text-main">{API_BASE}</span></p>
+            <p><span className="text-cyan font-bold">KEY_LOADED</span>: {keyFile ? <span className="text-green uppercase">Ready</span> : <span className="text-[#ff5f56] uppercase">None</span>}</p>
+            <p className="mt-2 italic text-[11px]">If APIURL is "localhost" while on your phone, you forgot to add the VITE_API_URL variable to Vercel.</p>
+          </div>
+        );
+        break;
+
       case 'generate':
         const name = args[1] || 'mykey';
         try {
@@ -162,7 +173,18 @@ const App: React.FC = () => {
             </div>
           );
         } catch (err: any) {
-          output = <div className="history-output font-inter" style={{ color: '#ff5f56' }}>✖ Error generating key. Check if the API is online.</div>;
+          output = (
+            <div className="history-output font-inter" style={{ color: '#ff5f56' }}>
+              <p className="font-bold">✖ API CONNECTION FAILED</p>
+              <p className="text-[12px] mt-1 opacity-80">Tried to reach: {API_BASE}</p>
+              <p className="text-[12px] mt-2 text-dim italic">Possible causes:</p>
+              <ul className="text-[11px] mt-1 list-disc ml-4 text-dim">
+                <li>Vercel VITE_API_URL variable is missing or wrong.</li>
+                <li>Your Render backend is still starting up (Wait 2 mins).</li>
+                <li>The Render link in Vercel is missing "https://".</li>
+              </ul>
+            </div>
+          );
         }
         break;
 
