@@ -269,7 +269,17 @@ const App: React.FC = () => {
 
         {/* Input Box Bottom Area */}
         <div className="terminal-footer">
-          <div className="input-box">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!input.trim()) return;
+              executeCommand(input);
+              setCmdList(prev => [input, ...prev]);
+              setHistoryIdx(-1);
+              setInput('');
+            }}
+            className="input-box"
+          >
             <input
               type="text"
               className="input-field"
@@ -281,8 +291,10 @@ const App: React.FC = () => {
               spellCheck={false}
               autoComplete="off"
             />
-            <div className="enter-badge uppercase">ENTER</div>
-          </div>
+            <button type="submit" className="enter-badge uppercase border-none cursor-pointer bg-white/10 hover:bg-white/20 transition-colors">
+              ENTER
+            </button>
+          </form>
         </div>
       </div>
     </div>
